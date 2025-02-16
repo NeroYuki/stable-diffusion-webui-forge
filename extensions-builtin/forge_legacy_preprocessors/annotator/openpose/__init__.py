@@ -393,7 +393,7 @@ class OpenposeDetector:
 
         with torch.no_grad():
             keypoints_info = self.dw_pose_estimation(oriImg.copy())
-            return Wholebody.format_result(keypoints_info)
+            return Wholebody.format_result(keypoints_info, include_face=True, include_hand=True)
 
     def detect_poses_animal(self, oriImg) -> List[AnimalPoseResult]:
         """
