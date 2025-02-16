@@ -105,6 +105,12 @@ def threshold(img, res=512, thr_a=127, **kwargs):
     return remove_pad(result), True
 
 
+def fill(img, res=512, **kwargs):
+    img, remove_pad = resize_image_with_pad(img, res)
+    result = np.zeros_like(img, dtype=np.uint8)
+    result[np.min(img, axis=2) >= 0] = 255
+    return remove_pad(result), True
+
 def identity(img, **kwargs):
     return img, True
 

@@ -16,6 +16,25 @@ legacy_preprocessors = {
     #     "priority": 100,
     #     "tags": []
     # },
+    "fill": {
+        "label": "fill",
+        "call_function": fill,
+        "unload_function": None,
+        "managed_model": None,
+        "model_free": False,
+        "no_control_mode": False,
+        "resolution": {
+            "label": "Resolution",
+            "value": 512,
+            "minimum": 64,
+            "maximum": 2048
+        },
+        "slider_1": None,
+        "slider_2": None,
+        "slider_3": None,
+        "priority": 0,
+        "tags": []
+    },
     "invert (from white bg & black line)": {
         "label": "invert (from white bg & black line)",
         "call_function": invert,
@@ -311,6 +330,48 @@ legacy_preprocessors = {
     "dw_openpose_full": {
         "label": "dw_openpose_full",
         "call_function": functools.partial(g_openpose_model.run_model, include_body=True, include_hand=True, include_face=True, use_dw_pose=True),
+        "unload_function": g_openpose_model.unload,
+        "managed_model": 'g_openpose_model',
+        "model_free": False,
+        "no_control_mode": False,
+        "resolution": {
+            "label": "Resolution",
+            "minimum": 64,
+            "maximum": 2048,
+            "value": 512
+        },
+        "slider_1": None,
+        "slider_2": None,
+        "slider_3": None,
+        "priority": 0,
+        "tags": [
+            "OpenPose"
+        ]
+    },
+    "dw_openpose_hand": {
+        "label": "dw_openpose_full",
+        "call_function": functools.partial(g_openpose_model.run_model, include_body=True, include_hand=True, include_face=False, use_dw_pose=True),
+        "unload_function": g_openpose_model.unload,
+        "managed_model": 'g_openpose_model',
+        "model_free": False,
+        "no_control_mode": False,
+        "resolution": {
+            "label": "Resolution",
+            "minimum": 64,
+            "maximum": 2048,
+            "value": 512
+        },
+        "slider_1": None,
+        "slider_2": None,
+        "slider_3": None,
+        "priority": 0,
+        "tags": [
+            "OpenPose"
+        ]
+    },
+    "dw_openpose": {
+        "label": "dw_openpose_full",
+        "call_function": functools.partial(g_openpose_model.run_model, include_body=True, include_hand=False, include_face=False, use_dw_pose=True),
         "unload_function": g_openpose_model.unload,
         "managed_model": 'g_openpose_model',
         "model_free": False,
