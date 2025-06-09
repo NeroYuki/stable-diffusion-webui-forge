@@ -30,6 +30,19 @@ LORA_CLIP_MAP = {
 
 
 def load_lora(lora, to_load):
+    # BFL loras for Flux; from ComfyUI: comfy/lora_convert.py
+    def convert_lora_bfl_control(sd):
+        import torch
+        sd_out = {}
+        for k in sd:
+            k_to = "diffusion_model.{}".format(k.replace(".lora_B.bias", ".diff_b").replace("_norm.scale", "_norm.scale.set_weight"))
+            sd_out[k_to] = sd[k]
+        
+        return sd_out
+
+    if "img_in.lora_A.weight" in lora and "single_blocks.0.norm.key_norm.scale" in lora:
+        lora = convert_lora_bfl_control(lora)
+        
     patch_dict = {}
     loaded_keys = set()
     for x in to_load:
@@ -189,6 +202,13 @@ def load_lora(lora, to_load):
             patch_dict["{}.bias".format(to_load[x][:-len(".weight")])] = ("diff", (diff_bias,))
             loaded_keys.add(diff_bias_name)
 
+        set_weight_name = "{}.set_weight".format(x)
+        set_weight = lora.get(set_weight_name, None)
+        if set_weight is not None:
+            patch_dict[to_load[x]] = ("set", (set_weight,))
+            loaded_keys.add(set_weight_name)
+
+
     remaining_dict = {x: y for x, y in lora.items() if x not in loaded_keys}
     return patch_dict, remaining_dict
 
@@ -264,11 +284,13 @@ def model_lora_keys_unet(model, key_map={}):
     sdk = sd.keys()
 
     for k in sdk:
-        if k.startswith("diffusion_model.") and k.endswith(".weight"):
-            key_lora = k[len("diffusion_model."):-len(".weight")].replace(".", "_")
-            key_map["lora_unet_{}".format(key_lora)] = k
-            key_map["lora_prior_unet_{}".format(key_lora)] = k #cascade lora: TODO put lora key prefix in the model config
-            key_map["{}".format(k[:-len(".weight")])] = k #generic lora format without any weird key names
+        if k.startswith("diffusion_model."):
+            if k.endswith(".weight"):
+                key_lora = k[len("diffusion_model."):-len(".weight")].replace(".", "_")
+                key_map["lora_unet_{}".format(key_lora)] = k
+                key_map["{}".format(k[:-len(".weight")])] = k #generic lora format without any weird key names
+            else:
+                key_map["{}".format(k)] = k #generic lora format for not .weight without any weird key names
 
     diffusers_keys = utils.unet_to_diffusers(model.diffusion_model.config)
     for k in diffusers_keys:
@@ -276,6 +298,7 @@ def model_lora_keys_unet(model, key_map={}):
             unet_key = "diffusion_model.{}".format(diffusers_keys[k])
             key_lora = k[:-len(".weight")].replace(".", "_")
             key_map["lora_unet_{}".format(key_lora)] = unet_key
+            key_map["lycoris_{}".format(key_lora)] = unet_key #simpletuner lycoris format
 
             diffusers_lora_prefix = ["", "unet."]
             for p in diffusers_lora_prefix:
